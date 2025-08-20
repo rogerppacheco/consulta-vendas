@@ -36,7 +36,6 @@ def dashboard():
 
     try:
         with engine.connect() as conexao:
-            # Garante que a coluna dt_pedido está sendo selecionada
             query = text("SELECT vendedor, situacao, metodo_pagamento, dt_pedido FROM vendas")
             df_total = pd.read_sql(query, conexao)
         
@@ -70,25 +69,34 @@ def dashboard():
     if request.method == 'POST':
         nome_vendedor = request.form['nome_vendedor']
         nome_pesquisado = nome_vendedor
-        ano_mes_atual = datetime.now().strftime('%Y-%m')
-        with engine.connect() as conexao:
-            is_sqlite = engine.dialect.name == 'sqlite'
-            # Consulta SQL atualizada para incluir 'periodo' e 'dt_inst'
-            query_str = """
-                SELECT cliente, vendedor, os, situacao, dt_pedido, periodo, dt_inst FROM vendas 
-                WHERE vendedor {} :nome_vendedor AND
-                ({}('%Y-%m', dt_pedido) = :ano_mes OR {}('%Y-%m', dt_inst) = :ano_mes)
-            """.format(
-                'LIKE' if is_sqlite else 'ILIKE',
-                'strftime' if is_sqlite else 'to_char',
-                'strftime' if is_sqlite else 'to_char'
-            )
-            query = text(query_str)
-            raw_resultados = conexao.execute(query, {"nome_vendedor": f"%{nome_vendedor}%", "ano_mes": ano_mes_atual}).mappings().all()
-            
-            resultados = [dict(row) for row in raw_resultados]
+        
+        try:
+            with engine.connect() as conexao:
+                # Consulta alterada para ser mais robusta em diferentes tipos de banco de dados
+                query_str = """
+                    SELECT cliente, vendedor, os, situacao, dt_pedido, periodo, dt_inst FROM vendas
+                    WHERE vendedor LIKE :nome_vendedor
+                """
+                query = text(query_str)
+                df_resultados = pd.read_sql(query, conexao, params={"nome_vendedor": f"%{nome_vendedor}%"})
 
-        resumo_status = Counter([venda['situacao'] for venda in resultados]) if resultados else None
+            # Filtra os resultados por ano e mês usando o Pandas, que é mais confiável que funções SQL específicas
+            ano_mes_atual = datetime.now().strftime('%Y-%m')
+            df_resultados['dt_pedido'] = pd.to_datetime(df_resultados.get('dt_pedido'), errors='coerce')
+            df_resultados['dt_inst'] = pd.to_datetime(df_resultados.get('dt_inst'), errors='coerce')
+
+            df_filtrado = df_resultados[
+                (df_resultados['dt_pedido'].dt.strftime('%Y-%m') == ano_mes_atual) |
+                (df_resultados['dt_inst'].dt.strftime('%Y-%m') == ano_mes_atual)
+            ].copy()
+            
+            # Converte o DataFrame para uma lista de dicionários para o Jinja
+            resultados = df_filtrado.to_dict('records')
+            resumo_status = Counter([venda['situacao'] for venda in resultados]) if resultados else None
+            
+        except Exception as e:
+            print(f"Erro ao buscar vendas por vendedor: {e}")
+            resultados = []
 
     return render_template(
         'dashboard.html', 
