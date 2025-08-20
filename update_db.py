@@ -90,14 +90,17 @@ def atualizar_banco_de_dados():
         arquivo_excel = io.BytesIO(conteudo_arquivo)
         df = pd.read_excel(arquivo_excel, engine='openpyxl', sheet_name='ESTEIRA_RECORD')
         
+        # Adiciona a nova coluna 'MÉTODO DE PAGAMENTO'
         df = df.rename(columns={
             'ÍNDICE': 'indice', 'NOME': 'cliente', 'VENDEDOR': 'vendedor',
             'CPF': 'cpf', 'DT PEDIDO': 'dt_pedido', 'DT INST': 'dt_inst',
-            'PERÍODO': 'periodo', 'SITUAÇÃO': 'situacao', 'OS': 'os'
+            'PERÍODO': 'periodo', 'SITUAÇÃO': 'situacao', 'OS': 'os',
+            'MÉTODO DE PAGAMENTO': 'metodo_pagamento' 
         })
         
-        colunas_desejadas = ['indice', 'cliente', 'vendedor', 'cpf', 'dt_pedido', 'dt_inst', 'periodo', 'situacao', 'os']
-        # Garante que apenas colunas existentes na planilha sejam selecionadas
+        # Adiciona 'metodo_pagamento' à lista de colunas desejadas
+        colunas_desejadas = ['indice', 'cliente', 'vendedor', 'cpf', 'dt_pedido', 'dt_inst', 'periodo', 'situacao', 'os', 'metodo_pagamento']
+        
         colunas_existentes = [col for col in colunas_desejadas if col in df.columns]
         df_selecionado = df[colunas_existentes]
         
