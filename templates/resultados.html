@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados da Busca</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        a { text-decoration: none; }
+        .resumo {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .resumo h3 { margin-top: 0; }
+        .resumo p { margin: 5px 0; }
+
+        /* --- INÍCIO DA NOVA SEÇÃO DE CORES --- */
+        /* Definimos as cores de fundo para cada status */
+        .status-instalada { background-color: #d4edda; } /* Verde claro */
+        .status-cancelada { background-color: #f8d7da; } /* Vermelho claro */
+        .status-pendenciada { background-color: #fff3cd; } /* Amarelo claro */
+        .status-em-andamento { background-color: #cce5ff; } /* Azul claro */
+        /* --- FIM DA NOVA SEÇÃO DE CORES --- */
+
+    </style>
+</head>
+<body>
+    <h1>Resultados para o vendedor: "{{ nome_pesquisado }}"</h1>
+
+    {% if resumo %}
+    <div class="resumo">
+        <h3>Resumo Contábil</h3>
+        {% for status, contagem in resumo.items() %}
+            <p><strong>{{ status }}:</strong> {{ contagem }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if vendas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ÍNDICE</th>
+                    <th>NOME CLIENTE</th>
+                    <th>CPF</th>
+                    <th>DT PEDIDO</th>
+                    <th>DT INST</th>
+                    <th>PERÍODO</th>
+                    <th>SITUAÇÃO</th>
+                    <th>OS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venda in vendas %}
+                
+                {# --- INÍCIO DA LÓGICA PARA ADICIONAR A CLASSE DE COR --- #}
+                {% set classe_cor = '' %}
+                {% if 'INSTALADA' in venda['situacao'] %}
+                    {% set classe_cor = 'status-instalada' %}
+                {% elif 'CANCELADA' in venda['situacao'] %}
+                    {% set classe_cor = 'status-cancelada' %}
+                {% elif 'PENDENCIADA' in venda['situacao'] %}
+                    {% set classe_cor = 'status-pendenciada' %}
+                {% elif 'EM ANDAMENTO' in venda['situacao'] %}
+                    {% set classe_cor = 'status-em-andamento' %}
+                {% endif %}
+                {# --- FIM DA LÓGICA --- #}
+
+                <tr class="{{ classe_cor }}">
+                    <td>{{ venda['indice'] }}</td>
+                    <td>{{ venda['cliente'] }}</td>
+                    <td>{{ venda['cpf'] }}</td>
+                    <td>{{ venda['dt_pedido'] | formatadata }}</td>
+                    <td>{{ venda['dt_inst'] | formatadata }}</td>
+                    <td>{{ venda['periodo'] }}</td>
+                    <td>{{ venda['situacao'] }}</td>
+                    <td>{{ venda['os'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhuma venda encontrada para este vendedor.</p>
+    {% endif %}
+
+    <br>
+    <a href="/">Fazer outra busca</a>
+</body>
+</html>

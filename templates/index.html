@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Vendas</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        form { display: flex; gap: 10px; }
+        input[type="text"] { flex-grow: 1; padding: 8px; }
+        input[type="submit"] { padding: 8px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Consulta de Vendas por Vendedor</h1>
+    <form action="/buscar" method="post">
+        <input type="text" name="nome_vendedor" placeholder="Digite o nome do vendedor" required>
+        <input type="submit" value="Buscar">
+    </form>
+</body>
+</html>
