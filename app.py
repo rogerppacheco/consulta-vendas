@@ -1,22 +1,28 @@
-from flask import Flask, render_template, request
-from datetime import datetime
-from collections import Counter
+import pandas as pd
 import os
 from sqlalchemy import create_engine, text
-import pandas as pd
+from datetime import datetime
+from collections import Counter
+
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
+# Configurações de banco de dados
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///vendas.db')
 engine = create_engine(DATABASE_URL)
 
 def formatar_data_br(valor_data):
-    if not valor_data: return ""
+    if not valor_data:
+        return ""
     try:
-        if isinstance(valor_data, datetime): return valor_data.strftime('%d/%m/%Y')
+        if isinstance(valor_data, datetime):
+            return valor_data.strftime('%d/%m/%Y')
         obj_data = datetime.strptime(str(valor_data).split(' ')[0], '%Y-%m-%d')
         return obj_data.strftime('%d/%m/%Y')
-    except (ValueError, TypeError): return valor_data
+    except (ValueError, TypeError):
+        return valor_data
+
 app.jinja_env.filters['formatadata'] = formatar_data_br
 
 @app.route('/', methods=['GET', 'POST'])
