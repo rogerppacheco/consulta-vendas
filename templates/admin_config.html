@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurar Vendedores</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        h1 { text-align: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header a { text-decoration: none; background: #dc3545; color: white; padding: 8px 12px; border-radius: 4px; }
+        form { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .seller-list { columns: 2; list-style-type: none; padding: 0; }
+        .seller-list li { margin-bottom: 10px; }
+        button { display: block; width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; margin-top: 20px;}
+        .flash-messages { list-style: none; padding: 0; margin-bottom: 20px; }
+        .flash-messages li { padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Configurar Vendedores Visíveis</h1>
+        <a href="{{ url_for('admin_logout') }}">Sair</a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <p>Marque os vendedores que devem aparecer no relatório diário.</p>
+    <form method="post">
+        <ul class="seller-list">
+            {% for seller in all_sellers %}
+            <li>
+                <label>
+                    <input type="checkbox" name="sellers" value="{{ seller }}" 
+                           {% if seller in visible_sellers %}checked{% endif %}>
+                    {{ seller }}
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+        <button type="submit">Salvar Configuração</button>
+    </form>
+    <br>
+    <a href="{{ url_for('dashboard') }}" style="text-align: center; display: block;">Ir para o Painel Público</a>
+</body>
+</html>
